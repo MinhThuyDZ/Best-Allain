@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Minh Thùy - Best Allain?</title>
+<style>
+  :root{
+    --bg: #fff8fb;
+    --card: #ffffff;
+    --accent: #ff4d6d;
+    --muted: #666;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg,#fff 0%,var(--bg) 100%);
+    color:#222; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;
+  }
+  .wrap{width:900px; max-width:100%; display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .card{background:var(--card); border-radius:12px; padding:22px; box-shadow:0 10px 30px rgba(0,0,0,0.06)}
+  .center{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center}
+  h1{margin:0 0 8px; color:var(--accent)}
+  p.lead{margin:0 0 16px; color:var(--muted)}
+  .buttons{display:flex; gap:12px; margin-top:12px}
+  button{
+    padding:12px 18px; border-radius:10px; border:0; cursor:pointer; font-weight:600; font-size:1rem;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  }
+  .yes{background:linear-gradient(180deg,#ff6b85,#ff4d6d); color:white}
+  .no{background:linear-gradient(180deg,#eee,#ddd); color:#333}
+  .no.disabled{pointer-events:none; opacity:0.6}
+  /* shake animation */
+  @keyframes shake {
+    0%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-6px)}
+    80%{transform:translateX(6px)}
+    100%{transform:translateX(0)}
+  }
+  .shake { animation: shake 600ms ease; }
+  /* second column preview */
+  .preview-title{font-size:1.2rem; font-weight:700; margin-bottom:8px}
+  .result-title{font-size:1.6rem; color:var(--accent); margin-bottom:10px}
+  textarea.input-box{width:100%; min-height:120px; padding:12px; border-radius:10px; border:1px solid #eee; resize:vertical; font-size:1rem}
+  .desc{margin-top:14px; color:var(--muted); line-height:1.45; background:linear-gradient(180deg,#fff,#fff8fb); padding:12px; border-radius:8px; border:1px solid #f0e6eb}
+  .small{font-size:0.85rem;color:var(--muted); margin-top:8px}
+  /* hide second view initially */
+  .panel{display:block}
+  .hidden{display:none}
+  @media (max-width:880px){ .wrap{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- Left card: Prompt -->
+    <div class="card center" id="promptPanel">
+      <h1>Minh Thùy có phải Best Allain không?</h1>
+      <p class="lead">Chọn 1 trong 2: <strong>Có</strong> hoặc <strong>Không</strong></p>
+
+      <div class="buttons" role="group" aria-label="Chọn Có hoặc Không">
+        <button id="btnYes" class="yes" aria-pressed="false">1 — Có</button>
+        <button id="btnNo" class="no" aria-pressed="false">2 — Không</button>
+      </div>
+
+      <p class="small">Ghi chú: nhấn "Không" sẽ làm nút rung và không bấm lại được.</p>
+    </div>
+
+    <!-- Right card: Result / Input (hidden until Yes) -->
+    <div class="card panel hidden" id="resultPanel">
+      <div class="preview-title">Kết quả</div>
+      <div class="result-title" id="resultHeading">Chính Xác Sao Đó</div>
+
+      <label for="userText" style="font-weight:600; display:block; margin-bottom:6px">Nhập chữ bên dưới (để gửi, copy, hoặc lưu):</label>
+      <textarea id="userText" class="input-box" placeholder="Viết lời nhắn của bạn ở đây..."></textarea>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="btnCopy" style="flex:1">Sao chép</button>
+        <button id="btnSave" style="flex:1; background:#666; color:#fff">Tải TXT</button>
+      </div>
+
+      <div class="desc" id="descText">
+        Có thể các bạn chưa biết: <strong>Minh Thùy Allain</strong> là 1 tay chơi Allain khét tiếng của thế giới, với rank Chiến Thần xuống Tinh Anh, và hơn 2000 trận. Anh ta là một tay chơi Allain với kỹ năng KS cân 5 cân 4 mà không sợ ai.
+      </div>
+
+      <div class="small">Bạn có thể chỉnh nội dung, nhấn "Sao chép" để gửi qua tin nhắn hoặc "Tải TXT" để lưu.</div>
+    </div>
+
+  </div>
+
+<script>
+  const btnYes = document.getElementById('btnYes');
+  const btnNo = document.getElementById('btnNo');
+  const promptPanel = document.getElementById('promptPanel');
+  const resultPanel = document.getElementById('resultPanel');
+  const userText = document.getElementById('userText');
+  const btnCopy = document.getElementById('btnCopy');
+  const btnSave = document.getElementById('btnSave');
+
+  // Khi bấm "Không" -> rung và vô hiệu hóa
+  btnNo.addEventListener('click', () => {
+    if (btnNo.classList.contains('disabled')) return;
+    // thêm class shake
+    btnNo.classList.add('shake');
+    // disable
+    btnNo.classList.add('disabled');
+    btnNo.setAttribute('aria-pressed','true');
+
+    // remove shake class sau animation kết thúc nhưng để disabled
+    setTimeout(() => {
+      btnNo.classList.remove('shake');
+      // giữ disabled (không thể bấm)
+    }, 700);
+  });
+
+  // Khi bấm "Có" -> show panel result
+  btnYes.addEventListener('click', () => {
+    // cập nhật heading (theo yêu cầu: "Chính Xác Sao Đó")
+    document.getElementById('resultHeading').textContent = 'Chính Xác Sao Đó';
+    // ẩn prompt, hiện result
+    promptPanel.classList.add('hidden');
+    resultPanel.classList.remove('hidden');
+
+    // chèn một nội dung mặc định vào textarea (dễ chỉnh)
+    userText.value = `Gửi Minh Thùy,\n\nMình tin rằng bạn là một trong những Best Allain nhất: với kỹ năng và kinh nghiệm hơn 2000 trận, rank Chiến Thần -> Tinh Anh.\n\nBạn thực sự rất ấn tượng!`;
+    userText.focus();
+  });
+
+  // Copy to clipboard
+  btnCopy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(userText.value);
+      btnCopy.textContent = 'Đã sao chép ✓';
+      setTimeout(()=> btnCopy.textContent = 'Sao chép', 1400);
+    } catch(e) {
+      alert('Trình duyệt không cho phép sao chép tự động. Hãy bôi đen và sao chép thủ công.');
+    }
+  });
+
+  // Save as .txt
+  btnSave.addEventListener('click', () => {
+    const blob = new Blob([userText.value], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'loi-nhan.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Tăng tính vui: nếu cố click btnNo nhiều lần (trước khi disabled) nó sẽ shake mỗi lần
+  btnNo.addEventListener('mousedown', (e) => {
+    // nếu already disabled thì ngăn hành vi
+    if (btnNo.classList.contains('disabled')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+
+  // Accessibility: allow Enter key on buttons
+  [btnYes, btnNo].forEach(b => {
+    b.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        b.click();
+      }
+    });
+  });
+</script>
+</body>
+</html>
